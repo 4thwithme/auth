@@ -1,17 +1,24 @@
-const config = require("config");
-const mongoose = require("mongoose");
-const usersRoute = require("./routes/user.route");
 const express = require("express");
+const mongoose = require("mongoose");
+const cookieParser = require('cookie-parser');
+
+const usersRoute = require("./routes/user.route");
+const authRouter = require('./routes/auth.route');
+
+const port = process.env.PORT || 3000;
+const config = require("config");
+
 const app = express();
 
 
-const port = process.env.PORT || 3000;
-
 //use config module to get the privatekey, if no private key set, end the application
+app.use(cookieParser());
+
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json());
 //use users route for api/users
 app.use("/api/users", usersRoute);
+app.use("/api/auth", authRouter);
 //connect to mongodb
 mongoose
   .connect("mongodb://localhost/nodejsauth", {

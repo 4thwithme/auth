@@ -9,30 +9,20 @@ router.get("/current", auth, async (req, res) => {
   res.send(user);
 });
 
-router.post("/", async (req, res) => {
-  // validate the request body first
+router.post("/create", async (req, res) => {
   const { error } = validate(req.body);
-  console.log(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   //find an existing user
-  let user = await User.findOne({ email: req.body.email });
+  let user = await User.findOne({ name: req.body.name });
   if (user) return res.status(400).send("User already registered.");
 
-  user = new User({
+  User.collection.insertOne({
     name: req.body.name,
-    password: req.body.password,
-    email: req.body.email
-  });
-  user.password = await bcrypt.hash(user.password, 10);
-  await user.save();
-
-  const token = user.generateAuthToken();
-  res.header("x-auth-token", token).send({
-    _id: user._id,
-    name: user.name,
-    email: user.email
-  });
+    password: await bcrypt.hash(req.body.password, 10),
+    isOnline: false,
+  })
+    .then(() => res.sendStatus(200));
 });
 
 module.exports = router;
